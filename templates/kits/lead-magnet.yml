@@ -1,0 +1,38 @@
+name: Hello World Lead Magnet
+description: A single-page email capture form. Minimal — just HTML, CSS, and a thank-you message.
+version: "0.1"
+
+customisation_points:
+  - key: niche
+    question: "What's your niche?"
+    example: "yoga teachers"
+  - key: lead_magnet_title
+    question: "What's your lead magnet called?"
+    example: "5 Morning Stretches PDF"
+
+prd_template: |
+  ## Problem Statement
+  {{niche}} need a landing page to capture emails for "{{lead_magnet_title}}".
+
+  ## Must Have (v1)
+  1. Single HTML page with email capture form
+  2. Form submits to a thank-you message (no backend — just client-side swap)
+  3. Mobile responsive
+  4. Clean, minimal design
+
+  ## Technical Approach
+  - Single index.html file (no framework, no build step)
+  - CSS in a <style> tag
+  - JavaScript: form submit swaps the form for a "Thanks! Check your email" message
+  - No backend, no database, no email integration (just the UI)
+
+  ## Success Criteria
+  - Page loads from file:// or any static server
+  - Form shows validation (email required)
+  - Submit swaps to thank-you message
+  - Looks good on mobile
+
+  ## Out of Scope
+  - Actual email sending
+  - Backend / API
+  - Analytics
