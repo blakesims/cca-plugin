@@ -1,5 +1,11 @@
 {
   "name": "cca-plugin",
+  "description": "A beginner-friendly plugin that provides pre-made 'kits' to build custom software following a structure and proven workflow",
   "version": "0.1.0",
-  "description": "Claude Code Architects — structured AI-assisted development workflow. PRD → Plan → Build with review gates."
+  "author": {
+    "name": "Blake Sims",
+    "url": "https://github.com/blakesims"
+  },
+  "repository": "https://github.com/blakesims/cca-plugin",
+  "license": "MIT"
 }

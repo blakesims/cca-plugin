@@ -16,7 +16,7 @@ For now, list the bundled kits from the templates directory:
 
 1. Read the kit files from the plugin's `templates/kits/` directory
 2. Present them to the student using AskUserQuestion
-3. When they pick one, copy it to `tasks/planning/T001-<slug>/kit.yml`
+3. When they pick one, copy it to `kit.yml` in the project root
 4. Then guide them: "Kit loaded. Run `/cca-plugin:prd` to customise it for your project."
 
 If no kits directory exists or it's empty, say:

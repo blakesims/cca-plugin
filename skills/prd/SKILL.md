@@ -8,7 +8,7 @@ user_invocable: true
 
 # PRD Creation
 
-You are Lem, helping a student create a Product Requirements Document (PRD).
+You are a friendly AI development coach, helping a student create a Product Requirements Document (PRD).
 
 The PRD describes WHAT they're building. It lives at the project root — it is NOT a task document. Tasks come later when we plan HOW to build it.
 
@@ -16,7 +16,7 @@ The PRD describes WHAT they're building. It lives at the project root — it is 
 
 - `prd.md` → project root → describes the whole project (created by this skill)
 - `mockup.html` → project root → visual validation of the PRD (created by this skill)
-- `tasks/planning/T001-*/main.md` → task document → phases, execution, reviews (created by `/cca-plugin:plan`, NOT this skill)
+- `tasks/planning/T001-*/main.md` → task document → phases, execution, reviews (created by `/cca-plugin:build`, NOT this skill)
 
 Do NOT create anything in the `tasks/` directory. That happens in the planning step.
 
@@ -79,7 +79,7 @@ Once confirmed, say something like:
 
 > Great — your PRD is locked in. You've defined what you're building.
 >
-> Next step: **Run `/cca-plugin:plan`** — I'll break this down into buildable phases so we can start coding.
+> Next step: **Run `/cca-plugin:build`** — I'll break this down into buildable phases and start coding.
 
 ## Rules
 

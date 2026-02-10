@@ -1,1 +1,0 @@
-/home/blake/repos/task-workflow-plugin/templates/global-task-manager.md
