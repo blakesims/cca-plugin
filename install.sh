@@ -12,15 +12,17 @@ if ! command -v claude &>/dev/null; then
   exit 1
 fi
 
-# ── Register marketplace + install plugins ─────────────────────
+# ── Register marketplace + install/update plugins ──────────────
 
 echo "  Adding CCA marketplace..."
-claude plugin marketplace add blakesims/cca-marketplace 2>&1 | sed 's/^/  /'
+# Idempotent — if already added, this may error. That's fine.
+claude plugin marketplace add blakesims/cca-marketplace 2>&1 | sed 's/^/  /' || true
 
 echo ""
 echo "  Installing plugins..."
-claude plugin install cca-plugin@cca-marketplace --scope user 2>&1 | sed 's/^/  /'
-claude plugin install task-workflow@cca-marketplace --scope user 2>&1 | sed 's/^/  /'
+# These will install or update if already present
+claude plugin install cca-plugin@cca-marketplace --scope user 2>&1 | sed 's/^/  /' || true
+claude plugin install task-workflow@cca-marketplace --scope user 2>&1 | sed 's/^/  /' || true
 
 echo ""
 echo "  Done! Launching Claude..."

@@ -53,17 +53,37 @@ Check if `~/.claude/plugins/task-workflow/` exists. This is the build engine tha
 
 Then stop. Do not proceed without task-workflow.
 
-### 2b. Directory check
+### 2b. Project directory
 
-Check that the current directory looks like a project root (not `~`, not `/`, not a system directory).
+The student might be running Claude from anywhere — their home directory, Downloads, Desktop, or even an existing project. We need a clean, empty directory for the new project.
 
-**If the cwd is the home directory or a system path:** Don't tell the student to leave and come back. Handle it right here:
+**Check the current directory:**
+- Run `ls` to see if it has files in it
+- Check if it's a "bad" location: home dir (`~`), system path (`/`, `/usr`, `/tmp`), or a non-empty directory with existing files
 
-1. Ask using AskUserQuestion: "What do you want to call your project?" with examples like "my-transcriber", "my-app", "voice-notes". Let them type a custom name.
-2. Create the directory: `mkdir -p ~/[project-name]`
-3. Change into it: `cd ~/[project-name]`
-4. Tell the student: "I've created `~/[project-name]` and moved us there. This is your project home — everything we build lives here."
-5. Continue with the rest of setup (do NOT stop).
+**Decision logic:**
+
+1. **Empty directory with a reasonable name** (e.g. `~/my-project/` that's empty): Fine to use. Confirm with the student: "Looks like you're in `[dir]` and it's empty — want to use this as your project directory?"
+
+2. **Home directory, system path, OR non-empty directory**: Ask the student where they want their project. Use AskUserQuestion:
+
+   > First things first — where do you want your project to live? I need an empty directory to set things up in.
+
+   Options:
+   - "Create a new folder in my home directory" (then ask for a name)
+   - "Use the current directory" (only if it's empty — warn if not: "This directory has files in it. I'd recommend a fresh directory so things don't get mixed up.")
+
+3. **If creating a new directory**, ask for the project name using AskUserQuestion with examples like "my-transcriber", "my-app", "voice-notes".
+
+4. Create the directory and move into it:
+   ```bash
+   mkdir -p ~/[project-name]
+   cd ~/[project-name]
+   ```
+
+5. Tell the student: "I've created `~/[project-name]` and moved us there. This is your project home — everything we build lives here."
+
+6. Continue with setup (do NOT stop).
 
 ### 2c. Git check
 
