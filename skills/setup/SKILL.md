@@ -167,6 +167,7 @@ Create `.cca-state` in the project root:
 
 ```yaml
 stage: setup_complete
+next_cmd: /cca-plugin:prd
 kit: null
 level: null
 task_id: null
@@ -175,14 +176,35 @@ total_phases: null
 updated: <current ISO timestamp>
 ```
 
-This file tracks where the student is in the workflow. Every skill reads and updates it.
+This file tracks where the student is in the workflow. Every skill reads and updates it. The `next_cmd` field is displayed in the status bar so students always know their next step.
+
+## Step 6b: Configure Status Line
+
+Create `.claude/settings.json` in the project root (this is a project-level Claude Code config):
+
+```bash
+mkdir -p .claude
+```
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/plugins/cca-plugin/statusline/cca-status.sh"
+  }
+}
+```
+
+This makes the Claude Code status bar show the current workflow stage and next command. It reads from `.cca-state` automatically.
+
+Explain to the student: "I've set up a status bar at the bottom of your screen — it shows where you are in the workflow and what to do next. It updates as we go."
 
 ## Step 7: Initial Commit
 
 Stage and commit everything that was created:
 
 ```bash
-git add CLAUDE.md .cca-state tasks/
+git add CLAUDE.md .cca-state .claude/settings.json tasks/
 git commit -m "chore: project setup via CCA plugin"
 ```
 

@@ -51,7 +51,7 @@ Then stop.
 4. Fill in the `## Task` section with a summary of the PRD content
 5. Set Status to `PLANNING`
 6. Update the GTM: add a row to the Planning table, increment Next ID
-7. **Update `.cca-state`:** Set `stage: planning`, `task_id: T{ID}`. Update `updated` timestamp.
+7. **Update `.cca-state`:** Set `stage: planning`, `task_id: T{ID}`, `next_cmd: Planning...`. Update `updated` timestamp.
 
 Tell the student:
 > I've created task T{ID}. Now I'm going to plan out how to build this — I'll break it into phases that we can tackle one at a time.
@@ -74,7 +74,7 @@ While waiting, tell the student:
 
 When the `<task-notification>` arrives, read main.md to confirm status is `PLAN_REVIEW`.
 
-**Update `.cca-state`:** Set `stage: plan_review`. Update `updated` timestamp.
+**Update `.cca-state`:** Set `stage: plan_review`, `next_cmd: Reviewing plan...`. Update `updated` timestamp.
 
 ## Step 4: Plan Review
 
@@ -113,7 +113,7 @@ Use `AskUserQuestion` to let them choose:
 Once confirmed:
 - `git mv tasks/planning/T{ID}-{slug} tasks/active/T{ID}-{slug}` (or `mv` if untracked)
 - Update GTM: move row from Planning to Active, set status to EXECUTING_PHASE_1
-- **Update `.cca-state`:** Set `stage: plan_confirmed`, `total_phases: N` (from plan). Update `updated` timestamp.
+- **Update `.cca-state`:** Set `stage: plan_confirmed`, `total_phases: N` (from plan), `next_cmd: Building Phase 1`. Update `updated` timestamp.
 
 Tell the student:
 > Let's build. Starting with Phase 1: [title].
@@ -124,7 +124,7 @@ For each phase N:
 
 ### 6a. Execute
 Update status to `EXECUTING_PHASE_N` in main.md.
-**Update `.cca-state`:** Set `stage: building_phase_N`, `current_phase: N`. Update `updated` timestamp.
+**Update `.cca-state`:** Set `stage: building_phase_N`, `current_phase: N`, `next_cmd: Building Phase N...`. Update `updated` timestamp.
 
 ```
 Task(
@@ -140,7 +140,7 @@ Tell the student:
 
 ### 6b. Code Review
 When executor notification arrives, update status to `CODE_REVIEW`.
-**Update `.cca-state`:** Set `stage: code_review_N`. Update `updated` timestamp.
+**Update `.cca-state`:** Set `stage: code_review_N`, `next_cmd: Reviewing Phase N...`. Update `updated` timestamp.
 
 ```
 Task(
@@ -166,7 +166,7 @@ When all phases pass:
 1. Move task: `git mv tasks/active/T{ID}-{slug} tasks/completed/T{ID}-{slug}` (or `mv` if untracked)
 2. Update GTM: move to Completed section
 3. Update main.md status to `COMPLETE`
-4. **Update `.cca-state`:** Set `stage: complete`, `current_phase: null`. Update `updated` timestamp.
+4. **Update `.cca-state`:** Set `stage: complete`, `current_phase: null`, `next_cmd: Done! Try your app`. Update `updated` timestamp.
 
 Celebrate with the student:
 

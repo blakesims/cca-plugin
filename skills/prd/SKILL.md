@@ -95,7 +95,7 @@ If no kit, generate a PRD with these sections:
 
 **Save to `prd.md` in the project root.** NOT in tasks/.
 
-**Update `.cca-state`:** Set `stage: prd_draft`. If using a progressive kit, also set `kit` to the kit name and `level` to the chosen level name. Update `updated` timestamp.
+**Update `.cca-state`:** Set `stage: prd_draft`, `next_cmd: /cca-plugin:prd` (to continue refining). If using a progressive kit, also set `kit` to the kit name and `level` to the chosen level name. Update `updated` timestamp.
 
 ### 4. Create mockup
 
@@ -122,7 +122,7 @@ Iterate until the student confirms. Update both `prd.md` and `mockup.html` with 
 
 Once confirmed:
 
-**Update `.cca-state`:** Set `stage: prd_confirmed`. Update `updated` timestamp.
+**Update `.cca-state`:** Set `stage: prd_confirmed`, `next_cmd: /clear then /cca-plugin:build`. Update `updated` timestamp.
 
 Say something like:
 
