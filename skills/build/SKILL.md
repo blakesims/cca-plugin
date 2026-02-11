@@ -31,7 +31,7 @@ Read `.cca-state` in the project root.
 - Commit after each phase passes code review
 - Use student-friendly language throughout — explain what's happening and why
 
-## Step 1: Read PRD
+## Step 1: Read PRD and Determine Build Scope
 
 Read `prd.md` from the project root.
 
@@ -40,21 +40,72 @@ Read `prd.md` from the project root.
 
 Then stop.
 
-**If found:** Summarise it back to the student in 2-3 sentences and confirm:
-> This is what we're building: [summary]. Ready to go?
+**If found:** Summarise it back to the student in 2-3 sentences.
 
-## Step 2: Create Task
+### 1b. Decompose into tasks
+
+This is critical: **do NOT create one giant task for the whole PRD.** Break it into properly-scoped tasks first.
+
+**If the project has a kit** (check `.cca-state` for `kit` field, then read the kit YAML from the plugin's `templates/kits/` directory):
+
+1. Read the kit's `build_scope` section
+2. Evaluate each scope group's `condition` against the student's choices (stored in `prd.md` or `.cca-state`)
+3. A scope group is **active** if:
+   - It has `always_included: true`, OR
+   - Its `condition` evaluates to true based on the student's choices
+4. Each active scope group becomes a separate task
+5. Respect `depends_on` ordering — tasks must be built in dependency order
+
+**If no kit, or Freeform level, or student added features that don't map to any scope group:**
+
+Spawn a decomposition agent to propose task boundaries:
+
+```
+Task(
+  subagent_type="general-purpose",
+  description="Decompose PRD into tasks",
+  prompt="Read the PRD at {path to prd.md}. Break it into 2-4 properly-scoped tasks that can each be planned and built independently. Each task should produce a working, testable increment. The first task should be the simplest core functionality. Output a numbered list with: task name, 1-sentence description, key features, and dependencies on other tasks. This is a student learning project — keep each task focused and achievable.",
+  run_in_background=true
+)
+```
+
+### 1c. Present task breakdown to student
+
+Present the proposed tasks in plain English:
+
+> Here's how I'd break this into buildable pieces:
+>
+> **Task 1: [name]** — [description]. This is the foundation — everything else builds on it.
+> **Task 2: [name]** — [description]. Depends on Task 1.
+> **Task 3: [name]** — [description]. Depends on Task 1.
+>
+> Each task gets its own plan, build, and review cycle. You'll have working software after Task 1 — the rest adds features on top.
+
+Use `AskUserQuestion` to let them choose:
+- "Looks good — let's start" (proceed)
+- "I want to change the breakdown" (take feedback, adjust)
+- "Can you explain why it's split this way?" (teach about scope and incremental delivery)
+
+**Update `.cca-state`:** Set `total_tasks` to the number of active scope groups, `current_task: 1`. Update `updated` timestamp.
+
+## Step 2: Create Task (for current scope group)
+
+For each task in the breakdown (starting with Task 1):
 
 1. Read `tasks/global-task-manager.md` to get the next task ID
 2. Create the task directory: `tasks/planning/T{ID}-{slug}/`
 3. Copy the template from `tasks/main-template.md` into `tasks/planning/T{ID}-{slug}/main.md`
-4. Fill in the `## Task` section with a summary of the PRD content
+4. Fill in the `## Task` section with:
+   - The scope group's description and features
+   - The relevant PRD sections (only what applies to THIS task)
+   - The `agent_notes` from the kit's scope group (if available) — these get passed to the planner/executor/reviewer
+   - **Explicit exclusions:** "This task does NOT cover: [list other scope groups]. Those are separate tasks."
 5. Set Status to `PLANNING`
 6. Update the GTM: add a row to the Planning table, increment Next ID
 7. **Update `.cca-state`:** Set `stage: planning`, `task_id: T{ID}`, `next_cmd: Planning...`. Update `updated` timestamp.
 
 Tell the student:
-> I've created task T{ID}. Now I'm going to plan out how to build this — I'll break it into phases that we can tackle one at a time.
+> Starting with Task [N]: **[name]** — [1-sentence description]. I'm going to plan how to build just this piece.
 
 ## Step 3: Plan
 
@@ -216,21 +267,43 @@ When review notification arrives, read main.md:
 After each phase passes, if there's a next phase:
 > Phase [N] done. Moving to Phase [N+1]: [title].
 
-## Step 7: Complete
+## Step 7: Task Complete — Next Task or Finish
 
-When all phases pass:
+When all phases of the current task pass:
+
 1. Move task: `git mv tasks/active/T{ID}-{slug} tasks/completed/T{ID}-{slug}` (or `mv` if untracked)
 2. Update GTM: move to Completed section
 3. Update main.md status to `COMPLETE`
-4. **Update `.cca-state`:** Set `stage: complete`, `current_phase: null`, `next_cmd: Done! Try your app`. Update `updated` timestamp.
 
-Celebrate with the student:
+### If there are more tasks in the breakdown:
+
+Tell the student what they just accomplished and what's next:
+
+> Task [N] complete: **[name]**! You now have [what this delivers — e.g. "a working transcriber you can run from the terminal"].
+>
+> Ready for the next piece? Task [N+1]: **[name]** — [description].
+
+Use `AskUserQuestion`:
+- "Let's keep going" → proceed to Step 2 for the next scope group
+- "I want to test what we have first" → that's great, encourage them. Tell them how to run it. When they're ready, they can run `/cca-plugin:build` to continue.
+- "I'm good with what we have" → that's fine too. Mark the project as complete at this stage.
+
+**Update `.cca-state`:** Set `current_task` to next task number, `next_cmd: Building Task N+1: [name]`. Update `updated` timestamp.
+
+**Important:** Between tasks, suggest `/clear` to free up context:
+> Quick tip: before we start the next task, let's clear the conversation to give Claude fresh context. Run `/clear` then `/cca-plugin:build` — I'll pick up right where we left off.
+
+### If this was the last task:
+
+**Update `.cca-state`:** Set `stage: complete`, `current_phase: null`, `current_task: null`, `next_cmd: Done! Try your app`. Update `updated` timestamp.
+
+Celebrate:
 
 > Your project is built! Here's what we accomplished:
 >
-> [List each phase and what it delivered]
+> [List each task and what it delivered]
 >
-> All [N] phases passed code review. Your code is committed and ready to go.
+> All tasks passed code review. Your code is committed and ready to go.
 >
 > **What's next?** Try it out! Run the app and see it in action.
 >
@@ -246,8 +319,8 @@ Celebrate with the student:
 
 This is handled by the Gate Check at the top. When `.cca-state` has a `stage` like `building_phase_2` or `code_review_3`:
 
-1. Read `task_id` and `current_phase` from `.cca-state`
+1. Read `task_id`, `current_phase`, `current_task`, and `total_tasks` from `.cca-state`
 2. Read the task's `main.md` to get full context
 3. Tell the student:
-   > Looks like you have an in-progress build: **{task_id}: [title]** — currently at Phase {current_phase}. Want me to continue from where we left off?
+   > Looks like you have an in-progress build: **{task_id}: [title]** — Task {current_task} of {total_tasks}, Phase {current_phase}. Want me to continue from where we left off?
 4. If yes, resume from the appropriate step in the Execute Loop.

@@ -107,6 +107,99 @@ levels:
     description: Blank canvas — describe exactly what you want and I'll write the PRD
     type: conversation
 
+# Build scope: defines how the PRD should be decomposed into tasks.
+# Each scope group becomes a separate task with its own plan/execute/review cycle.
+# The build skill evaluates `condition` against the student's choices to decide
+# which groups are active. Groups without a condition are always included.
+#
+# For Freeform level or when features don't map to any scope group,
+# the build skill spawns a decomposition agent to propose task boundaries.
+
+build_scope:
+  - name: Core Recording & Transcription
+    slug: core
+    description: >
+      Record audio from microphone, transcribe with faster-whisper, output text.
+      This should be a fully working CLI app by itself — record, transcribe, print/copy.
+    always_included: true
+    features:
+      - Project scaffolding (venv, requirements, config.yaml)
+      - Microphone capture via sounddevice (16kHz mono)
+      - Audio buffer → temp WAV file via numpy/scipy
+      - faster-whisper transcription (model auto-download on first run)
+      - Output to terminal / clipboard / file (based on config)
+      - Basic error handling (no mic, model download failure)
+    success_criteria:
+      - "Record a 10-second clip from terminal and see accurate transcription"
+      - "Works offline after first model download"
+    agent_notes: >
+      This is a student learning project. Keep the plan focused on getting a working
+      CLI app. Do NOT plan for any UI, hotkeys, or system integration — those are
+      separate tasks. Skip production concerns like GPU detection and DPI scaling.
+
+  - name: Desktop UI
+    slug: desktop-ui
+    description: >
+      PySide6 floating pill window with state machine, waveform, drag-to-reposition.
+      Wraps the core recording/transcription engine in a visual interface.
+    condition: "ui == desktop"
+    depends_on: [core]
+    features:
+      - PySide6 frameless always-on-top window
+      - State machine (IDLE → RECORDING → TRANSCRIBING → IDLE)
+      - Waveform visualization (20 bars, RMS log-scaled)
+      - Size transitions animated (200ms OutCubic)
+      - Drag-to-reposition with position persistence
+      - Right-click context menu (model, input device, quit)
+      - Tokyo Night color scheme
+    success_criteria:
+      - "Floating pill stays on top without stealing focus"
+      - "Click to record, click to stop, see transcription"
+      - "Waveform responds to audio input in real-time"
+    agent_notes: >
+      Student project. The core engine already exists as a working CLI app from the
+      previous task. This task ONLY builds the UI layer on top of it. Import and use
+      the existing recording and transcription modules — do not rewrite them.
+
+  - name: Web UI
+    slug: web-ui
+    description: >
+      Flask-based browser interface for recording and transcription.
+    condition: "ui == web"
+    depends_on: [core]
+    features:
+      - Flask server with WebSocket for live updates
+      - Record/stop button
+      - Transcription display
+      - Basic responsive layout
+    success_criteria:
+      - "Open browser, click record, see transcription appear"
+    agent_notes: >
+      Student project. The core engine already exists. This task ONLY builds the
+      web interface. Use the existing recording/transcription modules.
+
+  - name: System Integration
+    slug: system-integration
+    description: >
+      OS-level features: global hotkey, auto-paste into active window, VAD.
+      Each enabled feature is independent — not all are required.
+    condition: "any(hotkey, autopaste, vad)"
+    depends_on: [core]
+    features:
+      - Global hotkey toggle via pynput (if hotkey enabled)
+      - Auto-paste into active window via Cmd+V/Ctrl+V simulation (if autopaste enabled)
+      - Active window tracking per platform (if autopaste enabled)
+      - Voice activity detection for auto-stop (if vad enabled)
+      - Platform permission handling (macOS Accessibility for hotkey/paste)
+    success_criteria:
+      - "Press hotkey → recording starts, press again → stops and transcribes"
+      - "Transcribed text auto-pastes into the previously active window"
+    agent_notes: >
+      Student project. The core engine and UI already exist from previous tasks.
+      This task adds system-level integrations. Handle platform differences
+      (macOS Accessibility permissions, Linux wmctrl). Keep it focused — only
+      implement the features the student actually enabled.
+
 prd_template: |
   # {{app_name}} — Voice-to-Text Transcriber
 
