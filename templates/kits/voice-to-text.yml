@@ -13,13 +13,13 @@ defaults:
   app_name: my-transcriber
   use_case: general
   model: base.en
-  ui: terminal
+  ui: desktop
   language: en
   output: clipboard
-  autopaste: false
+  autopaste: true
   framework: python
   streaming: false
-  hotkey: false
+  hotkey: true
   vad: false
 
 levels:
@@ -155,13 +155,34 @@ prd_template: |
   4. Final text assembled when user stops{{/streaming}}
 
   {{#ui_desktop}}
-  **Floating window states:**
-  - IDLE: Small indicator (pill/dot) — ready to record
-  - RECORDING: Expanded — shows recording in progress
-  - TRANSCRIBING: Shows spinner/progress
-  - DONE: Shows transcribed text briefly, then returns to IDLE
+  **Floating pill UI — state machine:**
 
-  **Window flags:** Always on top, frameless, does not steal focus from active window.
+  | State | Size | Contents | Behaviour |
+  |-------|------|----------|-----------|
+  | IDLE | 36×20px | Tiny rounded pill, solid dark background | Draggable, click to start recording |
+  | RECORDING | 130-250×28px | Pulsing dot + mini waveform (20 bars, log-scaled) | Expands with animation, click to stop |
+  | TRANSCRIBING | 60-100×24px | Spinner + progress % label | Collapses slightly, auto-returns to IDLE |
+
+  **Window flags (PySide6):**
+  ```python
+  Qt.SplashScreen | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus
+  ```
+  Plus: `Qt.WA_TranslucentBackground`, `Qt.WA_ShowWithoutActivating`
+
+  **Color scheme (Tokyo Night):**
+  - Background: `#1a1b26` with 94% opacity
+  - Accent (waveform/links): `#7aa2f7` (blue)
+  - Recording dot: `#7dcfff` (cyan), pulsing between 40-100% opacity
+  - Text: `#c0caf5`
+  - Text dim: `#565f89`
+
+  **Key behaviours:**
+  - Always on top, never steals focus from the active window
+  - Draggable — position persists in settings file across restarts
+  - Default position: bottom center of screen, 12px from bottom edge
+  - Size transitions animated (200ms, OutCubic easing)
+  - Right-click context menu: model selection, input device, quit
+  - Waveform uses RMS with log scaling: `db = 20 * log10(rms + 1e-10)`, mapped from -80dB to -20dB
   {{/ui_desktop}}
 
   **Model:** `{{model}}` from faster-whisper (auto-downloads on first run)
@@ -174,7 +195,7 @@ prd_template: |
   model: {{model}}
   language: {{language}}
   output: {{output}}
-  {{#hotkey}}hotkey: ctrl+shift+r{{/hotkey}}
+  {{#hotkey}}hotkey: ctrl+f{{/hotkey}}
   ```
   Users can change these without editing Python code.
 
