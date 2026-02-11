@@ -57,16 +57,13 @@ Then stop. Do not proceed without task-workflow.
 
 Check that the current directory looks like a project root (not `~`, not `/`, not a system directory).
 
-**If the cwd is the home directory or a system path:** Tell the student:
-> You're in your home directory — let's create a proper project folder first.
->
-> ```
-> mkdir ~/my-project && cd ~/my-project
-> ```
->
-> Then relaunch Claude and run `/cca-plugin:setup` again.
+**If the cwd is the home directory or a system path:** Don't tell the student to leave and come back. Handle it right here:
 
-Then stop.
+1. Ask using AskUserQuestion: "What do you want to call your project?" with examples like "my-transcriber", "my-app", "voice-notes". Let them type a custom name.
+2. Create the directory: `mkdir -p ~/[project-name]`
+3. Change into it: `cd ~/[project-name]`
+4. Tell the student: "I've created `~/[project-name]` and moved us there. This is your project home — everything we build lives here."
+5. Continue with the rest of setup (do NOT stop).
 
 ### 2c. Git check
 

@@ -23,10 +23,9 @@ claude plugin install cca-plugin@cca-marketplace --scope user 2>&1 | sed 's/^/  
 claude plugin install task-workflow@cca-marketplace --scope user 2>&1 | sed 's/^/  /'
 
 echo ""
-echo "  Done! Both plugins are registered."
+echo "  Done! Launching Claude..."
+echo "  Type /cca-plugin:setup when you're in."
 echo ""
-echo "  Next steps:"
-echo "    1. cd into your project directory (or mkdir a new one)"
-echo "    2. Run: claude"
-echo "    3. Type: /cca-plugin:setup"
-echo ""
+
+# Launch Claude right here — setup skill handles directory creation
+exec claude
