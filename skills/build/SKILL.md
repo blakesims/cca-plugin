@@ -69,8 +69,39 @@ Task(
 )
 ```
 
-While waiting, tell the student:
-> Planning in progress — this usually takes a minute or two. I'm figuring out the best way to break this into buildable pieces.
+### Teaching moment (while the agent works)
+
+The planner agent runs in the background for 1-2 minutes. Use this time to teach. Don't just say "planning..." — make this a learning moment.
+
+Start by explaining what just happened in plain terms:
+
+> While we wait, let me explain what just happened — because this is one of the most powerful ideas in AI-assisted development.
+>
+> I just launched a **separate version of Claude** running in the background. You can't see it, but it's working right now. I gave it your project brief and a specific template, and its only job is to create a detailed plan — it won't write a single line of code. Just the plan.
+
+Then engage them with a Socratic question. Use AskUserQuestion:
+
+> Here's a question for you: **Why do you think we use a separate agent with fresh context, just to write a plan — instead of me doing everything myself in this conversation?**
+
+Offer options like:
+- "So it can focus without distractions"
+- "To keep this conversation clean"
+- "I'm not sure — tell me!"
+
+Whatever they answer, use it as a springboard to teach these concepts (adapt based on their answer — don't lecture, have a conversation):
+
+1. **Fresh context** — The planning agent starts with a clean slate. It only sees your project brief, not our entire conversation about setup and kits. This means it can think clearly about architecture without noise. In AI, context is like working memory — the less clutter, the better the thinking.
+
+2. **Separation of concerns** — Planning and coding are different skills. By giving the plan to a dedicated agent, we get a better plan. Then a *different* agent will write the code following that plan, and a *third* agent will review the code. Each one is a specialist.
+
+3. **Breaking big problems into small ones** — Your whole project might feel overwhelming, but the planner is breaking it into phases. Each phase is a small, achievable goal. This is how professional developers work — you never try to build everything at once.
+
+4. **Plan before code** — Writing code without a plan is like building a house without blueprints. You might get something that stands, but you'll waste time and probably have to tear parts down. The plan gives us a clear target for each phase.
+
+Keep it conversational and brief — 2-3 of these points max, based on what they seem interested in. Don't dump all four on them. The goal is curiosity, not a lecture.
+
+End with something like:
+> The planner should be done any moment. When it finishes, I'll show you the plan and you can tell me if it matches what you had in mind.
 
 When the `<task-notification>` arrives, read main.md to confirm status is `PLAN_REVIEW`.
 
@@ -88,6 +119,12 @@ Task(
   run_in_background=true
 )
 ```
+
+While the reviewer works, briefly explain:
+
+> I've now sent the plan to a **reviewer agent** — a fresh Claude that hasn't seen any of our conversation. Its job is to poke holes in the plan: are there missing steps? Will the phases actually work? Is anything too vague?
+>
+> This is the same pattern professional engineering teams use — you never ship your own plan without someone else checking it. The reviewer has no emotional attachment to the plan, so it catches things the planner might have missed.
 
 When notification arrives, read main.md:
 - **If READY** → proceed to Step 5
@@ -135,8 +172,27 @@ Task(
 )
 ```
 
-Tell the student:
-> Building Phase [N]: [title]... This is where the code gets written.
+### Teaching moment (Phase 1 only — while executor works)
+
+For **Phase 1 only**, use the wait time to teach about what the executor is doing. For later phases, keep it brief — they already understand the pattern.
+
+> Another agent is writing code right now. It has the plan we just approved, and it's working through Phase [N] step by step.
+>
+> Notice what's happening here: we're not writing code ourselves. We **planned** first, and now a specialist agent is **executing** that plan. If the code doesn't pass review, we'll fix it before moving on — we never ship broken work to the next phase.
+
+For Phase 1, ask a Socratic question using AskUserQuestion:
+
+> **Quick question: Why do you think we have a separate agent review the code, instead of just trusting the agent that wrote it?**
+
+Options:
+- "Fresh eyes catch mistakes"
+- "The writer might be biased"
+- "Not sure — why?"
+
+Use their answer to briefly explain the code review concept — a reviewer with fresh context will catch things the writer missed because it was too deep in the implementation. Same reason professional teams do code reviews. Keep it to 2-3 sentences.
+
+For **Phase 2+**, just say:
+> Building Phase [N]: [title]... The executor agent is on it.
 
 ### 6b. Code Review
 When executor notification arrives, update status to `CODE_REVIEW`.
