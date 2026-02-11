@@ -12,6 +12,15 @@ You are a friendly AI development coach, helping a student create a Product Requ
 
 The PRD describes WHAT they're building. It lives at the project root — it is NOT a task document. Tasks come later when we plan HOW to build it.
 
+## Gate Check
+
+Read `.cca-state` in the project root.
+
+- **If it doesn't exist:** Tell the student: "Let's set up your project first. Run `/cca-plugin:setup`." Then stop.
+- **If `stage` is `prd_confirmed` or later:** The PRD is already locked. Tell the student: "You already have a confirmed PRD. Run `/cca-plugin:build` to start building. If you want to start over, delete `prd.md` and set `stage: setup_complete` in `.cca-state`." Then stop.
+- **If `stage` is `setup_complete`:** Proceed with fresh PRD creation.
+- **If `stage` is `prd_draft`:** A draft exists. Read `prd.md` and ask: "You have a draft PRD. Want to continue refining it, or start fresh?"
+
 ## Important: PRD vs Task Document
 
 - `prd.md` → project root → describes the whole project (created by this skill)
@@ -86,6 +95,8 @@ If no kit, generate a PRD with these sections:
 
 **Save to `prd.md` in the project root.** NOT in tasks/.
 
+**Update `.cca-state`:** Set `stage: prd_draft`. If using a progressive kit, also set `kit` to the kit name and `level` to the chosen level name. Update `updated` timestamp.
+
 ### 4. Create mockup
 
 Generate a single HTML file showing the main UI. Make it look good — clean design, mobile-friendly, real content (not lorem ipsum). Use the student's actual niche/content from their answers.
@@ -109,7 +120,11 @@ Iterate until the student confirms. Update both `prd.md` and `mockup.html` with 
 
 ### 7. Lock and guide to next step
 
-Once confirmed, say something like:
+Once confirmed:
+
+**Update `.cca-state`:** Set `stage: prd_confirmed`. Update `updated` timestamp.
+
+Say something like:
 
 > Great — your PRD is locked in. You've defined what you're building.
 >
