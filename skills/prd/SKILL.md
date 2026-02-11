@@ -128,7 +128,12 @@ Say something like:
 
 > Great — your PRD is locked in. You've defined what you're building.
 >
-> Next step: **Run `/cca-plugin:build`** — I'll break this down into buildable phases and start coding.
+> Before we move to building, let's clear the slate. Run these two commands:
+>
+> 1. **`/clear`** — This clears our conversation so the build agent starts fresh with a clean mind. Your PRD and project state are saved to files, so nothing is lost.
+> 2. **`/cca-plugin:build`** — I'll break this down into buildable phases and start coding.
+>
+> This is a good habit: clear between major phases so Claude can focus fully on the next step.
 
 ## Rules
 

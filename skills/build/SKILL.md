@@ -176,10 +176,9 @@ Celebrate with the student:
 >
 > All [N] phases passed code review. Your code is committed and ready to go.
 >
-> **What's next?** You could:
-> - Test it out and iterate
-> - Add more features with another `/cca-plugin:build`
-> - Share it with someone and get feedback
+> **What's next?** Try it out! Run the app and see it in action.
+>
+> If you want to add more features or start a new project, run `/clear` first to give Claude a fresh context, then come back with your next idea.
 
 ## Error Handling
 
