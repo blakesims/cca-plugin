@@ -7,16 +7,18 @@ mkdir -p "$PLUGIN_DIR"
 echo "Installing Claude Code Architects..."
 
 # task-workflow engine (dependency)
-if [ -d "$PLUGIN_DIR/task-workflow" ]; then
+if [ -d "$PLUGIN_DIR/task-workflow/.git" ]; then
   git -C "$PLUGIN_DIR/task-workflow" pull --quiet
 else
+  rm -rf "$PLUGIN_DIR/task-workflow"
   git clone --quiet git@github.com:blakesims/task-workflow-plugin.git "$PLUGIN_DIR/task-workflow"
 fi
 
 # cca-plugin (student-facing)
-if [ -d "$PLUGIN_DIR/cca-plugin" ]; then
+if [ -d "$PLUGIN_DIR/cca-plugin/.git" ]; then
   git -C "$PLUGIN_DIR/cca-plugin" pull --quiet
 else
+  rm -rf "$PLUGIN_DIR/cca-plugin"
   git clone --quiet git@github.com:blakesims/cca-plugin.git "$PLUGIN_DIR/cca-plugin"
 fi
 

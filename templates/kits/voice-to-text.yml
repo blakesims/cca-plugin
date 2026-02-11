@@ -1,0 +1,206 @@
+name: Voice-to-Text Transcriber
+description: >
+  Build your own local voice-to-text app. Record speech, transcribe with AI,
+  see results instantly. Runs locally — no API keys, no subscriptions, your data stays private.
+version: "0.1"
+
+# Progressive customisation: each level includes all questions from levels below it.
+# The PRD skill asks "How deep do you want to configure?" first, then asks
+# only the questions for that level + all lower levels.
+# Keys not asked get their value from `defaults`.
+
+defaults:
+  app_name: my-transcriber
+  use_case: general
+  model: base.en
+  ui: terminal
+  language: en
+  output: clipboard
+  autopaste: false
+  framework: python
+  streaming: false
+  hotkey: false
+  vad: false
+
+levels:
+  - name: Quick Start
+    description: Sensible defaults, start building in minutes
+    questions:
+      - key: app_name
+        question: "What do you want to call your app?"
+        example: "my-transcriber"
+      - key: use_case
+        question: "What will you mainly use it for?"
+        options:
+          meetings: "Transcribe meetings and calls"
+          journaling: "Voice journaling / daily notes"
+          coding: "Dictate code comments and docs"
+          general: "General voice-to-text for anything"
+
+  - name: Customise
+    description: Pick your model, UI style, and output
+    questions:
+      - key: model
+        question: "Speed or accuracy?"
+        options:
+          tiny.en: "Fastest, decent accuracy (~40MB download)"
+          base.en: "Balanced — recommended (~75MB download)"
+          small.en: "Most accurate, needs more RAM (~250MB download)"
+        default: base.en
+      - key: ui
+        question: "How do you want to interact with it?"
+        options:
+          terminal: "Text prints to terminal (simplest)"
+          web: "Browser-based UI with Flask"
+          desktop: "Floating window that stays on top"
+        default: terminal
+      - key: output
+        question: "Where should transcribed text go?"
+        options:
+          print: "Just print to screen"
+          clipboard: "Auto-copy to clipboard"
+          file: "Save to a text file"
+        default: clipboard
+      - key: autopaste
+        question: "Auto-paste after transcription?"
+        options:
+          false: "No — just copy to clipboard, I'll paste myself"
+          true: "Yes — automatically paste into the active window (like magic)"
+        default: false
+      - key: language
+        question: "English only or multiple languages?"
+        options:
+          en: "English only (faster, more accurate)"
+          multi: "Multiple languages (auto-detect)"
+        default: en
+
+  - name: Architect
+    description: Full control — pick your stack and advanced features
+    questions:
+      - key: framework
+        question: "What framework for the UI?"
+        options:
+          python: "Pure Python — PySide6 for desktop, Flask for web"
+          electron: "Electron — web tech as a desktop app (heavier, more polished)"
+          tauri: "Tauri — Rust + web frontend (lightweight, advanced)"
+        default: python
+      - key: streaming
+        question: "Record-and-transcribe or live streaming?"
+        options:
+          false: "Record → stop → transcribe (simpler, recommended)"
+          true: "Live transcription as you speak (advanced)"
+        default: false
+      - key: hotkey
+        question: "Global hotkey to start/stop recording?"
+        options:
+          false: "No hotkey — use a button or terminal command"
+          true: "Yes — global keyboard shortcut"
+        default: false
+      - key: vad
+        question: "Voice activity detection (auto-stop on silence)?"
+        options:
+          false: "No — manual start/stop"
+          true: "Yes — auto-detect when you stop talking"
+        default: false
+
+  - name: Freeform
+    description: Blank canvas — describe exactly what you want and I'll write the PRD
+    type: conversation
+
+prd_template: |
+  # {{app_name}} — Voice-to-Text Transcriber
+
+  ## Problem Statement
+  I need a local voice-to-text tool for {{use_case}}. It should run entirely on my machine
+  with no cloud APIs, keeping my audio private.
+
+  ## Must Have (v1)
+  1. Record audio from microphone (16kHz, mono)
+  2. Transcribe speech to text using local AI model ({{model}})
+  3. Display transcription {{#ui_terminal}}in the terminal{{/ui_terminal}}{{#ui_web}}in a browser UI{{/ui_web}}{{#ui_desktop}}in a floating always-on-top window{{/ui_desktop}}
+  4. {{#output_clipboard}}Auto-copy transcribed text to clipboard{{/output_clipboard}}{{#output_file}}Save transcriptions to a text file{{/output_file}}{{#output_print}}Print transcribed text to screen{{/output_print}}
+  {{#autopaste}}5. Auto-paste transcribed text into the active window after transcription{{/autopaste}}
+  5. Work offline — no internet required after initial model download
+  6. Config file (`config.yaml`) to change model, language, and output without editing code
+
+  ## Technical Approach
+
+  **Stack:**
+  - Python 3.10+
+  - `faster-whisper` — local Whisper model inference (pip install, no compilation needed)
+  - `sounddevice` — microphone capture (ships its own PortAudio drivers, no system deps)
+  - `numpy` — audio buffer handling
+  - `scipy` — WAV file writing
+  {{#ui_web}}- `flask` — lightweight web server for browser UI{{/ui_web}}
+  {{#ui_desktop}}- `PySide6` — floating always-on-top window (Qt framework, professional look){{/ui_desktop}}
+  {{#output_clipboard}}- `pyperclip` — cross-platform clipboard access{{/output_clipboard}}
+  {{#hotkey}}- `pynput` — global keyboard shortcut listener{{/hotkey}}
+  {{#autopaste}}- `pynput` — simulate Cmd+V / Ctrl+V to auto-paste{{/autopaste}}
+
+  **Architecture:**
+  ```
+  Microphone → sounddevice (capture) → numpy buffer → WAV temp file → faster-whisper ({{model}}) → text → output
+  ```
+
+  **Recording flow:**
+  {{^streaming}}1. User triggers recording (button, Enter key, or hotkey)
+  2. Audio streams into a buffer via sounddevice callback
+  3. User stops recording
+  4. Buffer saved to temp WAV file
+  5. faster-whisper transcribes the file
+  6. Text displayed / copied / pasted{{/streaming}}
+  {{#streaming}}1. Audio streams continuously via sounddevice callback
+  2. Chunks sent to faster-whisper in real-time
+  3. Partial transcriptions displayed as they arrive
+  4. Final text assembled when user stops{{/streaming}}
+
+  {{#ui_desktop}}
+  **Floating window states:**
+  - IDLE: Small indicator (pill/dot) — ready to record
+  - RECORDING: Expanded — shows recording in progress
+  - TRANSCRIBING: Shows spinner/progress
+  - DONE: Shows transcribed text briefly, then returns to IDLE
+
+  **Window flags:** Always on top, frameless, does not steal focus from active window.
+  {{/ui_desktop}}
+
+  **Model:** `{{model}}` from faster-whisper (auto-downloads on first run)
+  {{#language_en}}English-only model — faster and more accurate for English speech.{{/language_en}}
+  {{#language_multi}}Multilingual model with automatic language detection.{{/language_multi}}
+
+  ## Configuration
+  `config.yaml` at project root:
+  ```yaml
+  model: {{model}}
+  language: {{language}}
+  output: {{output}}
+  {{#hotkey}}hotkey: ctrl+shift+r{{/hotkey}}
+  ```
+  Users can change these without editing Python code.
+
+  ## Platform Notes
+  - Works on macOS and Linux out of the box
+  - **Windows users: use native Python, NOT WSL** — WSL has no reliable microphone access
+  - macOS: terminal/IDE will prompt for microphone permission on first run — just click Allow
+  - First run downloads the model (~75MB for base.en) — needs internet once
+  {{#hotkey}}- macOS: global hotkeys require Accessibility permission in System Settings{{/hotkey}}
+
+  ## Success Criteria
+  - Record a 10-second clip and see accurate transcription
+  - Model loads in under 5 seconds on modern hardware
+  - Transcription completes in under 2 seconds for a 10-second clip
+  - Works without internet after first model download
+  {{#ui_desktop}}- Floating window stays on top of other apps without stealing focus{{/ui_desktop}}
+  {{#output_clipboard}}- Transcribed text appears in clipboard ready to paste{{/output_clipboard}}
+
+  ## Out of Scope
+  - Speaker diarization (who said what)
+  - Real-time translation
+  - Cloud API fallback
+  - Mobile support
+  - Post-processing / grammar cleanup (future enhancement)
+
+  ## Install
+  ```bash
+  pip install faster-whisper sounddevice numpy scipy{{#output_clipboard}} pyperclip{{/output_clipboard}}{{#ui_web}} flask{{/ui_web}}{{#ui_desktop}} PySide6{{/ui_desktop}}{{#hotkey}} pynput{{/hotkey}}{{#autopaste}} pynput{{/autopaste}}
+  ```

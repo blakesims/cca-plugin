@@ -26,12 +26,40 @@ Do NOT create anything in the `tasks/` directory. That happens in the planning s
 
 Look for kit YAML files in the plugin's `templates/kits/` directory (go up two levels from this skill file to the plugin root, then into `templates/kits/`).
 
-- If a kit exists, read it. It contains `customisation_points` (questions to ask) and a `prd_template` (template to fill in).
+Check if a `kit.yml` already exists in the project root (placed there by `/cca-plugin:kits`). If so, use that kit. Otherwise, if there are multiple kits in the templates directory, ask the student which one they want.
+
+- If a kit exists, read it.
 - If no kit or student wants to start from scratch, use the generic questions below.
 
 ### 2. Gather intent
 
-If using a kit, ask the questions from `customisation_points` in the YAML. Use AskUserQuestion.
+Kits can have two formats: **simple** (flat `customisation_points`) or **progressive** (with `levels` and `defaults`).
+
+#### Progressive kits (has `levels` key)
+
+These kits support progressive customisation. The student picks how deep they want to go.
+
+**Step 2a:** Ask the student their comfort level using AskUserQuestion. Present each level's `name` and `description`:
+
+> How much do you want to configure? Pick the level that feels right — you can always change things later.
+
+- **Quick Start** — Sensible defaults, start building in minutes
+- **Customise** — Pick your model, UI style, and output
+- **Architect** — Full control over stack and advanced features
+- **Freeform** — Blank canvas, describe exactly what you want
+
+**Step 2b:** Based on their choice:
+- Collect questions from their chosen level AND all levels below it (progressive — Level 2 includes Level 1 and Level 0 questions)
+- For the **Freeform** level (`type: conversation`): skip the template entirely. Have a free conversation about what they want to build, then generate a custom PRD from scratch.
+- For all other levels: ask the collected questions using AskUserQuestion. For questions with `options`, show the options. For questions with `example`, show the example as a placeholder.
+
+**Step 2c:** Fill in any keys NOT asked with values from the kit's `defaults` map.
+
+#### Simple kits (has `customisation_points` key, no `levels`)
+
+Ask the questions from `customisation_points` in the YAML. Use AskUserQuestion.
+
+#### No kit
 
 If no kit, ask these generic questions:
 - "What are you building?" (1-2 sentences)
@@ -42,6 +70,12 @@ If no kit, ask these generic questions:
 ### 3. Generate PRD
 
 If using a kit, substitute the student's answers into the `prd_template` from the YAML.
+
+**Template substitution rules:**
+- `{{key}}` → replace with the value for that key
+- `{{#key_value}}text{{/key_value}}` → include `text` only if `key` equals `value` (e.g. `{{#ui_web}}Flask setup{{/ui_web}}` renders only when `ui` is `web`)
+- `{{^key}}text{{/key}}` → include `text` only if `key` is false/empty
+- Strip any unmatched conditional blocks (student didn't pick that option)
 
 If no kit, generate a PRD with these sections:
 - Problem Statement
