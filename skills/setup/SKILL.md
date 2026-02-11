@@ -34,13 +34,102 @@ Start with a welcome message. Something like:
 >
 > Let me get your project set up — I'll explain everything as we go.
 
-## Step 2: Environment Check (explain as you go)
+## Step 2: Pre-flight Checks
 
-Check the environment, but narrate what you're doing and why:
+Before creating anything, verify the environment can support the workflow. Check these and narrate what you're doing:
 
-- **Git**: Check if this is a git repo. If not, explain: "Git tracks every change you make — think of it as unlimited undo for your whole project. Let me set that up." Then run `git init`.
-- **CLAUDE.md**: Check if `CLAUDE.md` exists. Explain: "This file tells me (Claude) how to work in your project — like a briefing note. I'll create one with the workflow steps built in."
-- **Tasks directory**: Check if `tasks/` exists. Explain: "This is where we'll track your build plan — each phase of your project lives here so you can always pick up where you left off."
+### 2a. Plugin dependency check
+
+Check if `~/.claude/plugins/task-workflow/` exists. This is the build engine that powers the planning and execution phases.
+
+**If missing:** Tell the student:
+> I need one more plugin to power the build workflow. Run this in a separate terminal:
+>
+> ```
+> git clone https://github.com/blakesims/task-workflow-plugin.git ~/.claude/plugins/task-workflow
+> ```
+>
+> Then come back here and run `/cca-plugin:setup` again.
+
+Then stop. Do not proceed without task-workflow.
+
+### 2b. Directory check
+
+Check that the current directory looks like a project root (not `~`, not `/`, not a system directory).
+
+**If the cwd is the home directory or a system path:** Tell the student:
+> You're in your home directory — let's create a proper project folder first.
+>
+> ```
+> mkdir ~/my-project && cd ~/my-project
+> ```
+>
+> Then relaunch Claude and run `/cca-plugin:setup` again.
+
+Then stop.
+
+### 2c. Git check
+
+Check if `git` is available. If yes, check if `git config user.name` and `git config user.email` are set.
+
+- **No git:** Tell the student to install git (link to git-scm.com) and come back.
+- **Git but no name/email:** Explain: "Git needs to know who you are for your project history." Then set it:
+  ```
+  git config --global user.name "Your Name"
+  git config --global user.email "your@email.com"
+  ```
+  Ask for their name and email using AskUserQuestion.
+
+### 2d. Git repo
+
+Check if this is a git repo. If not, explain: "Git tracks every change you make — think of it as unlimited undo for your whole project. Let me set that up." Then run `git init`.
+
+## Step 3: Create CLAUDE.md
+
+This is critical. CLAUDE.md is read by Claude Code automatically, even if the plugin isn't loaded. It acts as a safety net.
+
+**Check if `CLAUDE.md` already exists.** If it does, read it. If it already contains the CCA workflow section, skip this step. Otherwise, append the CCA section to the existing file.
+
+**If creating fresh or appending, add this content:**
+
+```markdown
+## CCA Workflow
+
+This project uses the Claude Code Architects structured workflow.
+
+### If `/cca-plugin:*` commands work:
+Follow the workflow: `/cca-plugin:prd` → `/cca-plugin:build`
+
+### If `/cca-plugin:*` commands are NOT recognised:
+You are running without the CCA plugin loaded. Tell the student:
+
+> The CCA plugin isn't loaded in this session. To use the full workflow:
+>
+> 1. Press **Ctrl+C** to exit this Claude session
+> 2. Relaunch with: `claude --plugin-dir ~/.claude/plugins/cca-plugin`
+> 3. Then run `/cca-plugin:setup` (or `/cca-plugin:prd` if already set up)
+>
+> If the plugin isn't installed yet, run:
+> ```
+> curl -sSL https://raw.githubusercontent.com/blakesims/cca-plugin/main/install.sh | bash
+> ```
+
+### Workflow stages (tracked in .cca-state):
+1. **setup** → Project scaffolded, git initialised
+2. **prd** → Define what you're building (PRD + mockup)
+3. **build** → Plan phases, then build step by step with code review gates
+
+### Rules for Claude:
+- Do NOT start writing application code unless the student has a confirmed PRD (`prd.md` exists and `.cca-state` shows `prd_confirmed` or later)
+- If the student asks to "build something" or "code something" without a PRD, guide them to run `/cca-plugin:prd` first (or relaunch with the plugin if commands aren't available)
+- Check `.cca-state` to understand where the student is in the workflow
+```
+
+Explain to the student: "This file tells me (Claude) how to work in your project — like a briefing note. Even if you open Claude without the plugin loaded, I'll know about your workflow and can help you get back on track."
+
+## Step 4: Tasks Directory
+
+Check if `tasks/` exists. If not, explain: "This is where we'll track your build plan — each phase of your project lives here so you can always pick up where you left off."
 
 Create what's missing. For the tasks system, use templates from the task-workflow plugin:
 
@@ -52,7 +141,7 @@ Create what's missing. For the tasks system, use templates from the task-workflo
 
 Show a brief summary of what was created.
 
-## Step 3: Introduce Kits
+## Step 5: Introduce Kits
 
 After setup is complete, introduce the kit system:
 
@@ -72,7 +161,7 @@ Read the available kits from the plugin's templates directory. To find it, look 
 
 > No starter kits installed yet. No worries — run `/cca-plugin:prd` and we'll build your project brief from scratch.
 
-## Step 4: Create .cca-state
+## Step 6: Create .cca-state
 
 Create `.cca-state` in the project root:
 
@@ -88,7 +177,18 @@ updated: <current ISO timestamp>
 
 This file tracks where the student is in the workflow. Every skill reads and updates it.
 
-## Step 5: What's Next
+## Step 7: Initial Commit
+
+Stage and commit everything that was created:
+
+```bash
+git add CLAUDE.md .cca-state tasks/
+git commit -m "chore: project setup via CCA plugin"
+```
+
+Tell the student: "I've saved everything to git — your first commit! You can always come back to this point."
+
+## Step 8: What's Next
 
 End with a clear, simple next step. Don't overwhelm them with the full workflow yet — just the immediate next action:
 
