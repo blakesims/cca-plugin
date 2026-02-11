@@ -24,8 +24,7 @@ claude plugin install task-workflow@cca-marketplace --scope user 2>&1 | sed 's/^
 
 echo ""
 echo "  Done! Launching Claude..."
-echo "  Type /cca-plugin:setup when you're in."
 echo ""
 
-# Launch Claude right here — setup skill handles directory creation
-exec claude
+# Launch Claude with an initial message — setup kicks in automatically
+exec claude "Hi! I just installed Claude Code Architects. Let's set up my project."
