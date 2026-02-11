@@ -24,11 +24,11 @@ Central index of all tasks. Updated by orchestrator after each agent run.
 
 | ID | Task | Completed | Phases | Link |
 |:---|:-----|:----------|:-------|:-----|
-| — | — | — | — | — |
+| T001 | Convert CCA to Operator Model | 2026-02-10 | 4 | [main.md](completed/T001-operator-model/main.md) |
 
 ---
 
-**Next ID:** T001
+**Next ID:** T002
 
 **Status Values:**
 - `PLANNING` — Plan being created
