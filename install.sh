@@ -12,21 +12,40 @@ if ! command -v claude &>/dev/null; then
   exit 1
 fi
 
-# ── Register marketplace + install/update plugins ──────────────
+PLUGIN_DIR="${HOME}/.claude/plugins"
+mkdir -p "$PLUGIN_DIR"
 
-echo "  Adding CCA marketplace..."
-# Idempotent — if already added, this may error. That's fine.
-claude plugin marketplace add blakesims/cca-marketplace 2>&1 | sed 's/^/  /' || true
+# ── Clone / update plugins ─────────────────────────────────────
 
-echo ""
-echo "  Installing plugins..."
-# These will install or update if already present
-claude plugin install cca-plugin@cca-marketplace --scope user 2>&1 | sed 's/^/  /' || true
-claude plugin install task-workflow@cca-marketplace --scope user 2>&1 | sed 's/^/  /' || true
+# task-workflow engine (dependency)
+if [ -d "$PLUGIN_DIR/task-workflow/.git" ]; then
+  echo "  Updating task-workflow..."
+  git -C "$PLUGIN_DIR/task-workflow" pull --quiet 2>/dev/null || true
+else
+  rm -rf "$PLUGIN_DIR/task-workflow"
+  echo "  Cloning task-workflow..."
+  git clone --quiet https://github.com/blakesims/task-workflow-plugin.git "$PLUGIN_DIR/task-workflow"
+fi
+
+# cca-plugin (student-facing)
+if [ -d "$PLUGIN_DIR/cca-plugin/.git" ]; then
+  echo "  Updating cca-plugin..."
+  git -C "$PLUGIN_DIR/cca-plugin" pull --quiet 2>/dev/null || true
+else
+  rm -rf "$PLUGIN_DIR/cca-plugin"
+  echo "  Cloning cca-plugin..."
+  git clone --quiet https://github.com/blakesims/cca-plugin.git "$PLUGIN_DIR/cca-plugin"
+fi
+
+# Make statusline script executable
+chmod +x "$PLUGIN_DIR/cca-plugin/statusline/cca-status.sh" 2>/dev/null || true
 
 echo ""
 echo "  Done! Launching Claude..."
 echo ""
 
-# Launch Claude with an initial message — setup kicks in automatically
-exec claude "Hi! I just installed Claude Code Architects. Let's set up my project."
+# Launch Claude with both plugins and an initial message
+exec claude \
+  --plugin-dir "$PLUGIN_DIR/cca-plugin" \
+  --plugin-dir "$PLUGIN_DIR/task-workflow" \
+  "Hi! I just installed Claude Code Architects. Let's set up my project."
