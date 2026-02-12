@@ -2,7 +2,7 @@
 # Claude Code Architects — Plugin Installer
 #
 # What it does:
-#   1. Checks prerequisites (Node.js, git, Claude Code, sign-in)
+#   1. Checks prerequisites (git, Claude Code, sign-in)
 #   2. Registers the CCA plugin marketplace
 #   3. Installs cca-plugin (the student workflow)
 #   4. Installs task-workflow (the build engine)
@@ -31,22 +31,7 @@ echo "  Checking prerequisites..."
 echo ""
 READY=true
 
-# 1. Node.js
-if ! command -v node &>/dev/null; then
-  echo "  [x] Node.js not found"
-  case "$OS" in
-    mac)   echo "    → brew install node" ;;
-    linux) echo "    → curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -"
-           echo "    → sudo apt-get install -y nodejs" ;;
-    *)     echo "    → Download from https://nodejs.org" ;;
-  esac
-  echo ""
-  READY=false
-else
-  echo "  [ok] Node.js $(node --version)"
-fi
-
-# 2. git
+# 1. git
 if ! command -v git &>/dev/null; then
   echo "  [x] git not found"
   case "$OS" in
@@ -60,7 +45,7 @@ else
   echo "  [ok] git $(git --version | cut -d' ' -f3)"
 fi
 
-# 3. Claude Code
+# 2. Claude Code
 if ! command -v claude &>/dev/null; then
   echo "  [x] Claude Code not found"
   echo "    → curl -fsSL https://claude.ai/install.sh | bash"
@@ -70,7 +55,7 @@ else
   echo "  [ok] Claude Code $(claude --version 2>/dev/null | head -1)"
 fi
 
-# 4. Signed in
+# 3. Signed in
 if [ "$READY" = true ] && [ ! -s "$HOME/.claude/.credentials.json" ]; then
   echo "  [x] Not signed in to Claude"
   echo "    → Run 'claude' to open sign-in, then type /exit when done"
