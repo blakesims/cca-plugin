@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 # CCA Plugin — Status line script
 # Reads session JSON from stdin + .cca-state from project root
-# Displays: [Model] Stage: <stage> | Next: <command> | <context>% context
+# Zero external dependencies (uses python3 instead of jq)
 
 input=$(cat)
-MODEL=$(echo "$input" | jq -r '.model.display_name // "Claude"')
-PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
+
+# Parse JSON with python3 (no jq needed — python is required for the project anyway)
+read -r MODEL PCT <<< "$(echo "$input" | python3 -c "
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    model = d.get('model', {}).get('display_name', 'Claude')
+    pct = int(float(d.get('context_window', {}).get('used_percentage', 0)))
+    print(f'{model} {pct}')
+except: print('Claude 0')
+" 2>/dev/null || echo "Claude 0")"
 
 # Read CCA state if it exists in current directory
 if [ -f ".cca-state" ]; then
