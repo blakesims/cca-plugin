@@ -163,16 +163,17 @@ if [ "$NO_AUTH" = false ]; then
   pass "Auth credentials copied"
 fi
 
-# ── Configure git for HTTPS (no SSH keys in fresh env) ─────────
+# ── Configure git for HTTPS (env-only, no global config changes) ──
 
-run_in 'git config --global url."https://github.com/".insteadOf "git@github.com:"'
+# GIT_CONFIG_COUNT lets us override git config via env vars — ephemeral, no side effects
+GIT_ENV='export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf" GIT_CONFIG_VALUE_0="git@github.com:"'
 
 # ── Test: Marketplace add ──────────────────────────────────────
 
 echo ""
 log "Adding CCA marketplace..."
 
-MARKETPLACE_OUTPUT=$(run_in "claude plugin marketplace add blakesims/cca-marketplace 2>&1" || true)
+MARKETPLACE_OUTPUT=$(run_in "$GIT_ENV && claude plugin marketplace add blakesims/cca-marketplace 2>&1" || true)
 echo -e "    ${DIM}${MARKETPLACE_OUTPUT}${RESET}"
 
 if echo "$MARKETPLACE_OUTPUT" | grep -qi "success\|added"; then
@@ -184,7 +185,7 @@ fi
 # ── Test: Plugin install ───────────────────────────────────────
 
 log "Installing cca-plugin..."
-CCA_OUTPUT=$(run_in "claude plugin install cca-plugin@cca-marketplace --scope user 2>&1" || true)
+CCA_OUTPUT=$(run_in "$GIT_ENV && claude plugin install cca-plugin@cca-marketplace --scope user 2>&1" || true)
 echo -e "    ${DIM}${CCA_OUTPUT}${RESET}"
 
 if echo "$CCA_OUTPUT" | grep -qi "success"; then
@@ -194,7 +195,7 @@ else
 fi
 
 log "Installing task-workflow..."
-TW_OUTPUT=$(run_in "claude plugin install task-workflow@cca-marketplace --scope user 2>&1" || true)
+TW_OUTPUT=$(run_in "$GIT_ENV && claude plugin install task-workflow@cca-marketplace --scope user 2>&1" || true)
 echo -e "    ${DIM}${TW_OUTPUT}${RESET}"
 
 if echo "$TW_OUTPUT" | grep -qi "success"; then

@@ -108,8 +108,11 @@ echo ""
 
 # ── Install via marketplace (persistent across sessions) ─────────
 
-# Ensure GitHub clones use HTTPS (most students won't have SSH keys)
-git config --global url."https://github.com/".insteadOf "git@github.com:" 2>/dev/null || true
+# Use HTTPS for GitHub clones (env-only, no global git config changes)
+# This ensures plugin install works without SSH keys configured
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf"
+export GIT_CONFIG_VALUE_0="git@github.com:"
 
 INSTALL_OK=true
 
