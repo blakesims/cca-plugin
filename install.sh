@@ -5,6 +5,14 @@ echo ""
 echo "  Claude Code Architects — Installing..."
 echo ""
 
+if ! command -v git &>/dev/null; then
+  echo "  git not found. Install it first:"
+  echo "    macOS:  xcode-select --install"
+  echo "    Linux:  sudo apt install git"
+  echo ""
+  exit 1
+fi
+
 if ! command -v claude &>/dev/null; then
   echo "  Claude Code CLI not found."
   echo "  Install it first: https://docs.anthropic.com/en/docs/claude-code"
