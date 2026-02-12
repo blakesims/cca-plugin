@@ -138,7 +138,8 @@ if [ "$INSTALL_OK" = true ]; then
   echo ""
   echo "  Done! Launching Claude..."
   echo ""
-  exec claude "Hi! I just installed Claude Code Architects. Let's set up my project."
+  # Reconnect stdin to terminal (curl|bash leaves pipe remnants on stdin)
+  exec claude "Hi! I just installed Claude Code Architects. Let's set up my project." </dev/tty
 fi
 
 # ── Fallback: clone + --plugin-dir (session-only) ────────────────
@@ -177,7 +178,8 @@ echo "  Plugins cloned (session-only mode — use --plugin-dir to load)."
 echo "  Done! Launching Claude..."
 echo ""
 
+# Reconnect stdin to terminal (curl|bash leaves pipe remnants on stdin)
 exec claude \
   --plugin-dir "$PLUGIN_DIR/cca-plugin" \
   --plugin-dir "$PLUGIN_DIR/task-workflow" \
-  "Hi! I just installed Claude Code Architects. Let's set up my project."
+  "Hi! I just installed Claude Code Architects. Let's set up my project." </dev/tty
