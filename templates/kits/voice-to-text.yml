@@ -91,6 +91,48 @@ levels:
     description: Blank canvas — describe exactly what you want and I'll write the PRD
     type: conversation
 
+# WSL: this kit requires audio input, GUI, and OS-level integration.
+# None of these work reliably in WSL. If the student chose to proceed
+# from WSL, all build agents MUST follow these rules:
+wsl:
+  requires_native_os: true
+  reason: "Audio capture, PySide6 GUI, and global hotkeys do not work in WSL"
+  build_rules:
+    - "Put the project in /mnt/c/Users/<username>/projects/<app_name>/ so Windows can access it"
+    - "Write all code normally in WSL — the code itself is platform-independent"
+    - "Do NOT run the app from WSL. Do NOT try python main.py or test_transcribe.py for audio/GUI tests"
+    - "Do NOT debug audio device errors or display server errors — they are WSL limitations, not code bugs"
+    - "Unit tests that mock audio (e.g. transcription from a WAV file) CAN run in WSL"
+    - "For every phase that needs real testing, give the student simple PowerShell instructions"
+  test_instructions: |
+    After each phase, tell the student exactly how to test from Windows.
+    Use this template — adapt for the specific phase:
+
+    > **Time to test!** Open PowerShell and run these commands:
+    >
+    > ```powershell
+    > cd C:\Users\<username>\projects\<app_name>
+    > python -m venv .venv
+    > .venv\Scripts\activate
+    > pip install -r requirements.txt
+    > python test_transcribe.py
+    > ```
+    >
+    > (You only need to create the venv and install requirements the first time.
+    > After that, just activate and run.)
+    >
+    > Tell me what happened and I'll help you fix any issues.
+
+    The venv + pip install only needs to happen once. After that, just:
+    > ```powershell
+    > cd C:\Users\<username>\projects\<app_name>
+    > .venv\Scripts\activate
+    > python main.py
+    > ```
+
+    IMPORTANT: The student is a beginner. Keep the PowerShell steps minimal
+    and explain what each command does the first time.
+
 # Build scope: defines how the PRD should be decomposed into tasks.
 # Each scope group becomes a separate task with its own plan/execute/review cycle.
 #
@@ -123,6 +165,9 @@ build_scope:
       Do NOT plan for any UI, hotkeys, or system integration — those are separate tasks.
       Do NOT worry about thread safety yet — the UI task will handle that.
       Keep it simple: record → save WAV → transcribe → return text.
+      ON WSL: Do NOT run test_transcribe.py (no audio device). Instead write a
+      test_from_file.py that transcribes a bundled sample.wav to verify the engine works.
+      Give the student PowerShell instructions to test real microphone recording (see wsl.test_instructions).
 
   - name: Desktop App
     slug: desktop-app
@@ -154,6 +199,8 @@ build_scope:
       Use Qt signals/slots for thread-safe UI updates from worker threads.
       Window flags: Qt.SplashScreen | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
       Tokyo Night: bg #1a1b26 94% opacity, accent #7aa2f7, recording dot #7dcfff, text #c0caf5
+      ON WSL: Do NOT run main.py (no display server). Write the code, then give the
+      student PowerShell instructions to test the GUI (see wsl.test_instructions).
 
   - name: System Integration
     slug: system-integration
@@ -177,6 +224,9 @@ build_scope:
       Only implement features the student actually enabled (check config).
       Handle macOS Accessibility permission request gracefully.
       Do NOT modify the core engine or UI — just add integration layers.
+      ON WSL: Hotkeys and auto-paste must target Windows, not Linux. Use
+      Windows-native pynput behaviour. Give student PowerShell test instructions
+      (see wsl.test_instructions).
 
 prd_template: |
   # {{app_name}} — Voice-to-Text Transcriber
