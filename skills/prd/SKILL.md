@@ -29,6 +29,35 @@ Read `.cca-state` in the project root.
 
 Do NOT create anything in the `tasks/` directory. That happens in the planning step.
 
+## Platform Check
+
+Before starting the process, detect the platform:
+
+```bash
+uname -s          # Darwin = macOS, Linux = Linux or WSL
+grep -qi microsoft /proc/version 2>/dev/null && echo "WSL" || echo "not WSL"
+```
+
+Store the result. If the student is on **WSL**, set `platform: wsl` in `.cca-state`.
+
+**If WSL and the selected kit requires desktop GUI, audio input, or system-level integration** (e.g. voice-to-text kit), warn the student before proceeding:
+
+> **Heads up — you're running in WSL (Windows Subsystem for Linux).**
+>
+> This kit builds a desktop app that needs direct access to your microphone and screen. WSL doesn't have reliable audio or GUI support, so the app won't run from inside WSL.
+>
+> You have two options:
+>
+> 1. **Build here, run on Windows** — I'll write the code here in WSL, but you'll need native Windows Python installed and you'll run the app from PowerShell. I'll guide you through it, but it's an extra step each time you test.
+>
+> 2. **Pick a different kit** — web apps, CLI tools, and APIs work perfectly in WSL with no workarounds.
+>
+> What would you like to do?
+
+Use AskUserQuestion with those two options. If they choose option 1, continue and note in the PRD that the project directory should be in `/mnt/c/Users/` (Windows filesystem) and the app runs via native Windows Python. If they choose option 2, show available kits.
+
+For **macOS and native Linux**, no warning needed — proceed normally.
+
 ## Process
 
 ### 1. Check for a kit
