@@ -97,9 +97,13 @@ If no kit, generate a PRD with these sections:
 
 **Update `.cca-state`:** Set `stage: prd_draft`, `next_cmd: /cca-plugin:prd` (to continue refining). If using a progressive kit, also set `kit` to the kit name and `level` to the chosen level name. Update `updated` timestamp.
 
-### 4. Create mockup
+### 4. Create mockup with 3 variants
 
-Generate a single HTML file showing the main UI. Make it look good — clean design, mobile-friendly, real content (not lorem ipsum). Use the student's actual niche/content from their answers.
+Generate a single HTML file showing **three distinct design variants** of the main UI. Each variant should be a meaningfully different take — not just color swaps. Think different layouts, interaction styles, or visual approaches. Label them clearly (e.g. "Variant A: Minimal", "Variant B: Detailed", "Variant C: Playful").
+
+Use your judgement on what makes each variant distinct. For example: one could be ultra-minimal, one information-dense, one with more personality. Make them all look good — clean design, real content (not lorem ipsum), using the student's actual niche/content from their answers.
+
+The mockup page should display all three variants side by side (or stacked on mobile) so the student can compare and choose.
 
 **Save to `mockup.html` in the project root.**
 
@@ -110,13 +114,13 @@ Do NOT tell the student to "open it in your browser." Just do it:
 open mockup.html        # macOS
 xdg-open mockup.html    # Linux
 ```
-Say: "I've opened the mockup in your browser — take a look and tell me what you think."
+Say: "I've opened the mockup in your browser — take a look at the three variants and tell me which one speaks to you (or what you'd mix and match from each)."
 
-### 6. Iterate
+### 6. Choose variant and iterate
 
-Ask: "Does this match what you had in mind? Want to change anything?"
+Ask the student which variant they prefer (or which elements from each). Then refine the chosen direction.
 
-Iterate until the student confirms. Update both `prd.md` and `mockup.html` with changes.
+Iterate until the student confirms. Update both `prd.md` and `mockup.html` with changes. The final mockup should show only the confirmed variant.
 
 ### 7. Lock and guide to next step
 

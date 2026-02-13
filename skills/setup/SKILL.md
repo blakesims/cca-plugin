@@ -40,16 +40,25 @@ Before creating anything, verify the environment can support the workflow. Check
 
 ### 2a. Plugin dependency check
 
-Check if `~/.claude/plugins/task-workflow/` exists. This is the build engine that powers the planning and execution phases.
+Check if `task-workflow` is installed. It could be in either location depending on how the student installed:
 
-**If missing:** Tell the student:
+1. `~/.claude/plugins/task-workflow/` (manual clone)
+2. `~/.claude/plugins/cache/*/task-workflow/*/` (marketplace install — e.g. `~/.claude/plugins/cache/cca-marketplace/task-workflow/0.1.0/`)
+
+Use bash to check: `ls ~/.claude/plugins/task-workflow/ 2>/dev/null || ls ~/.claude/plugins/cache/*/task-workflow/*/CLAUDE.md 2>/dev/null`
+
+Store whichever path you find as `TASK_WORKFLOW_DIR` for later use (templates in Step 4).
+
+**If missing from BOTH locations:** Tell the student:
 > I need one more plugin to power the build workflow. Run this in a separate terminal:
 >
 > ```
-> git clone https://github.com/blakesims/task-workflow-plugin.git ~/.claude/plugins/task-workflow
+> claude plugin install task-workflow@cca-marketplace --scope user
 > ```
 >
 > Then come back here and run `/cca-plugin:setup` again.
+>
+> If that doesn't work, try: `git clone https://github.com/blakesims/task-workflow-plugin.git ~/.claude/plugins/task-workflow`
 
 Then stop. Do not proceed without task-workflow.
 
@@ -120,16 +129,16 @@ Follow the workflow: `/cca-plugin:prd` → `/cca-plugin:build`
 ### If `/cca-plugin:*` commands are NOT recognised:
 You are running without the CCA plugin loaded. Tell the student:
 
-> The CCA plugin isn't loaded in this session. To use the full workflow:
+> The CCA plugin isn't loaded in this session. To fix this:
 >
 > 1. Press **Ctrl+C** to exit this Claude session
-> 2. Relaunch with: `claude --plugin-dir ~/.claude/plugins/cca-plugin`
-> 3. Then run `/cca-plugin:setup` (or `/cca-plugin:prd` if already set up)
->
-> If the plugin isn't installed yet, run:
-> ```
-> curl -sSL https://raw.githubusercontent.com/blakesims/cca-plugin/main/install.sh | bash
-> ```
+> 2. Install the plugins (if not already installed):
+>    ```
+>    claude plugin marketplace add blakesims/cca-marketplace
+>    claude plugin install cca-plugin@cca-marketplace --scope user
+>    claude plugin install task-workflow@cca-marketplace --scope user
+>    ```
+> 3. Relaunch `claude` and run `/cca-plugin:setup` (or `/cca-plugin:prd` if already set up)
 
 ### Workflow stages (tracked in .cca-state):
 1. **setup** → Project scaffolded, git initialised
@@ -151,7 +160,7 @@ Check if `tasks/` exists. If not, explain: "This is where we'll track your build
 Create what's missing. For the tasks system, use templates from the task-workflow plugin:
 
 1. Create directories: `mkdir -p tasks/planning tasks/active tasks/ongoing tasks/paused tasks/completed tasks/archived`
-2. Find templates at `~/.claude/plugins/task-workflow/templates/`. If not found, check if `tasks/main-template.md` already exists in the project (in case it was already set up).
+2. Find templates using the `TASK_WORKFLOW_DIR` discovered in Step 2a (either `~/.claude/plugins/task-workflow/templates/` or `~/.claude/plugins/cache/*/task-workflow/*/templates/`). If not found in either location, check if `tasks/main-template.md` already exists in the project (in case it was already set up).
 3. Copy `CLAUDE.md` from the templates directory to `tasks/CLAUDE.md`
 4. Copy `global-task-manager.md` from the templates directory to `tasks/global-task-manager.md`
 5. Copy `main.md` from the templates directory to `tasks/main-template.md`
@@ -197,7 +206,13 @@ This file tracks where the student is in the workflow. Every skill reads and upd
 
 ## Step 6b: Configure Status Line
 
-Create `.claude/settings.json` in the project root (this is a project-level Claude Code config):
+Create `.claude/settings.json` in the project root (this is a project-level Claude Code config).
+
+First, find the cca-plugin directory (similar to Step 2a):
+1. `~/.claude/plugins/cca-plugin/statusline/cca-status.sh` (manual clone)
+2. `~/.claude/plugins/cache/*/cca-plugin/*/statusline/cca-status.sh` (marketplace install)
+
+Use bash to resolve the actual path: `ls ~/.claude/plugins/cca-plugin/statusline/cca-status.sh 2>/dev/null || ls ~/.claude/plugins/cache/*/cca-plugin/*/statusline/cca-status.sh 2>/dev/null | head -1`
 
 ```bash
 mkdir -p .claude
@@ -207,10 +222,12 @@ mkdir -p .claude
 {
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/plugins/cca-plugin/statusline/cca-status.sh"
+    "command": "<resolved-path-to-cca-status.sh>"
   }
 }
 ```
+
+Use the actual resolved path in the JSON (not the placeholder above). Make sure the script is executable: `chmod +x <path>`.
 
 This makes the Claude Code status bar show the current workflow stage and next command. It reads from `.cca-state` automatically.
 
