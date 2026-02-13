@@ -58,7 +58,9 @@ Store whichever path you find as `TASK_WORKFLOW_DIR` for later use (templates in
 >
 > Then come back here and run `/cca-plugin:setup` again.
 >
-> If that doesn't work, try: `git clone https://github.com/blakesims/task-workflow-plugin.git ~/.claude/plugins/task-workflow`
+> If you get a "Permission denied (publickey)" error, run this first:
+> `git config --global url."https://github.com/".insteadOf "git@github.com:"`
+> Then try the install command again.
 
 Then stop. Do not proceed without task-workflow.
 

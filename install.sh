@@ -274,72 +274,52 @@ export GIT_CONFIG_COUNT=1
 export GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf"
 export GIT_CONFIG_VALUE_0="git@github.com:"
 
-INSTALL_OK=true
-
 echo "  Adding plugin marketplace..."
-if claude plugin marketplace add blakesims/cca-marketplace 2>/dev/null; then
+if claude plugin marketplace add blakesims/cca-marketplace 2>&1; then
   echo "  Marketplace added."
 else
-  echo "  Marketplace already registered or add failed — continuing."
+  echo "  Marketplace already registered — continuing."
 fi
 
+INSTALL_OK=true
+
 echo "  Installing cca-plugin..."
-if ! claude plugin install cca-plugin@cca-marketplace --scope user 2>/dev/null; then
-  echo "  Warning: cca-plugin install failed."
+if ! claude plugin install cca-plugin@cca-marketplace --scope user 2>&1; then
+  echo ""
+  echo "  cca-plugin install failed."
   INSTALL_OK=false
 fi
 
 echo "  Installing task-workflow..."
-if ! claude plugin install task-workflow@cca-marketplace --scope user 2>/dev/null; then
-  echo "  Warning: task-workflow install failed."
+if ! claude plugin install task-workflow@cca-marketplace --scope user 2>&1; then
+  echo ""
+  echo "  task-workflow install failed."
   INSTALL_OK=false
 fi
 
 if [ "$INSTALL_OK" = true ]; then
   echo ""
-  echo "  Plugins installed and will persist across sessions."
+  echo "  Plugins installed (user scope — persists across all sessions)."
   echo ""
   echo "  Done! Launching Claude..."
   echo ""
   exec claude "Hi! I just installed Claude Code Architects. Let's set up my project." < "$TTY_IN"
 fi
 
-# ── Fallback: clone + --plugin-dir (session-only) ────────────────
+# ── Install failed — show error and manual steps ─────────────────
 
 echo ""
-echo "  Marketplace install failed. Falling back to manual clone..."
-
-PLUGIN_DIR="${HOME}/.claude/plugins"
-mkdir -p "$PLUGIN_DIR"
-
-# task-workflow engine (dependency)
-if [ -d "$PLUGIN_DIR/task-workflow/.git" ]; then
-  echo "  Updating task-workflow..."
-  git -C "$PLUGIN_DIR/task-workflow" pull --quiet 2>/dev/null || true
-else
-  rm -rf "$PLUGIN_DIR/task-workflow"
-  echo "  Cloning task-workflow..."
-  git clone --quiet https://github.com/blakesims/task-workflow-plugin.git "$PLUGIN_DIR/task-workflow"
-fi
-
-# cca-plugin (student-facing)
-if [ -d "$PLUGIN_DIR/cca-plugin/.git" ]; then
-  echo "  Updating cca-plugin..."
-  git -C "$PLUGIN_DIR/cca-plugin" pull --quiet 2>/dev/null || true
-else
-  rm -rf "$PLUGIN_DIR/cca-plugin"
-  echo "  Cloning cca-plugin..."
-  git clone --quiet https://github.com/blakesims/cca-plugin.git "$PLUGIN_DIR/cca-plugin"
-fi
-
-chmod +x "$PLUGIN_DIR/cca-plugin/statusline/cca-status.sh" 2>/dev/null || true
-
+echo "  Plugin install failed. This usually means a git or network issue."
 echo ""
-echo "  Plugins cloned (session-only mode — use --plugin-dir to load)."
-echo "  Done! Launching Claude..."
+echo "  Try running these commands manually:"
 echo ""
-
-exec claude \
-  --plugin-dir "$PLUGIN_DIR/cca-plugin" \
-  --plugin-dir "$PLUGIN_DIR/task-workflow" \
-  "Hi! I just installed Claude Code Architects. Let's set up my project." < "$TTY_IN"
+echo "    claude plugin marketplace add blakesims/cca-marketplace"
+echo "    claude plugin install cca-plugin@cca-marketplace --scope user"
+echo "    claude plugin install task-workflow@cca-marketplace --scope user"
+echo ""
+echo "  If you see 'Permission denied (publickey)', run this first:"
+echo "    git config --global url.\"https://github.com/\".insteadOf \"git@github.com:\""
+echo ""
+echo "  Then re-run the install commands above."
+echo ""
+exit 1
