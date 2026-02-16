@@ -2,7 +2,7 @@
 # Claude Code Architects — Plugin Installer
 #
 # What it does:
-#   1. Checks prerequisites (git, Claude Code, sign-in)
+#   1. Checks prerequisites (git, Claude Code)
 #   2. Registers the CCA plugin marketplace
 #   3. Installs cca-plugin (the student workflow)
 #   4. Installs task-workflow (the build engine)
@@ -53,18 +53,6 @@ if ! command -v claude &>/dev/null; then
   READY=false
 else
   echo "  [ok] Claude Code $(claude --version 2>/dev/null | head -1)"
-fi
-
-# 3. Signed in
-if [ "$READY" = true ] && [ ! -s "$HOME/.claude/.credentials.json" ]; then
-  echo "  [x] Not signed in to Claude"
-  echo "    → Run 'claude' to open sign-in, then type /exit when done"
-  echo ""
-  READY=false
-else
-  if [ "$READY" = true ]; then
-    echo "  [ok] Signed in"
-  fi
 fi
 
 echo ""
