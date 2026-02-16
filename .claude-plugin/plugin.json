@@ -1,7 +1,7 @@
 {
   "name": "cca-plugin",
   "description": "A beginner-friendly plugin that provides pre-made 'kits' to build custom software following a structure and proven workflow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Blake Sims",
     "url": "https://github.com/blakesims"
