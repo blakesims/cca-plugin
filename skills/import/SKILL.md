@@ -135,6 +135,14 @@ Check what CCA infrastructure already exists:
 - `CLAUDE.md` in project root (with or without CCA section)?
 - `.claude/settings.json`?
 
+**Template alignment check:** If task files exist, also read the **current** templates from the task-workflow plugin (`TASK_WORKFLOW_DIR/templates/`). Compare the student's existing files against the plugin's templates to check if they are aligned:
+
+- `tasks/CLAUDE.md` vs `TASK_WORKFLOW_DIR/templates/CLAUDE.md`
+- `tasks/main-template.md` vs `TASK_WORKFLOW_DIR/templates/main.md`
+- `tasks/global-task-manager.md` — compare the **structure and header format** against `TASK_WORKFLOW_DIR/templates/global-task-manager.md` (ignore actual task entries the student has added)
+
+If any template is outdated or structurally different from the current plugin version, flag it for update in Step 4 and fix it in Step 6.
+
 ### 3d. Kit Matching (optional)
 
 If a PRD-like document exists, read available kits from the plugin's `templates/kits/` directory (go up two levels from this skill file to the plugin root, then into `templates/kits/`).
@@ -157,7 +165,11 @@ Show the student what you found. Use a clear table:
 >
 > **Recommended entry point:** PRD refinement → then straight to building
 
-Adapt the table to what you actually found. Use ✅ for things that exist and are good, ⚠️ for things that exist but need work, ❌ for things that are missing.
+Adapt the table to what you actually found. Use ✅ for things that exist and are good, ⚠️ for things that exist but need work, ❌ for things that are missing. For tasks infrastructure specifically, distinguish between missing and outdated:
+
+- ❌ `Tasks system — Not set up — Will create`
+- ⚠️ `Tasks system — Exists but templates outdated — Will update`
+- ✅ `Tasks system — Set up and aligned — No changes needed`
 
 If a kit match was found, mention it:
 
@@ -212,7 +224,7 @@ Tell the student what you found and where they're picking up.
 
 ## Step 6: Scaffold Missing Infrastructure
 
-Based on Step 3c results, create what's missing. **Do not overwrite anything that already exists.**
+Based on Step 3c results, create what's missing **and update what's outdated**.
 
 ### CLAUDE.md
 
@@ -255,13 +267,20 @@ You are running without the CCA plugin loaded. Tell the student:
 
 ### Tasks directory
 
-If `tasks/` doesn't exist (or is incomplete):
+**If `tasks/` doesn't exist:** Create the full structure from scratch:
 
 1. Create directories: `mkdir -p tasks/planning tasks/active tasks/ongoing tasks/paused tasks/completed tasks/archived`
 2. Find templates using the `TASK_WORKFLOW_DIR` from Step 2a
-3. Copy `CLAUDE.md` → `tasks/CLAUDE.md` (if not exists)
-4. Copy `global-task-manager.md` → `tasks/global-task-manager.md` (if not exists)
-5. Copy `main.md` → `tasks/main-template.md` (if not exists)
+3. Copy `CLAUDE.md` → `tasks/CLAUDE.md`
+4. Copy `global-task-manager.md` → `tasks/global-task-manager.md`
+5. Copy `main.md` → `tasks/main-template.md`
+
+**If `tasks/` exists but templates are outdated** (detected in Step 3c): Update them to match the current task-workflow plugin:
+
+1. Create any missing subdirectories (`mkdir -p tasks/planning tasks/active tasks/ongoing tasks/paused tasks/completed tasks/archived`)
+2. Replace `tasks/CLAUDE.md` with the current version from `TASK_WORKFLOW_DIR/templates/CLAUDE.md`
+3. Replace `tasks/main-template.md` with the current version from `TASK_WORKFLOW_DIR/templates/main.md`
+4. For `tasks/global-task-manager.md`: this is a living document — the student may have task entries in it. Read the current plugin template and the student's file. Update the **structure, headers, column format, and status values reference** to match the current template, but **preserve any existing task entries** the student has added. If in doubt, keep the student's data and update the surrounding structure.
 
 ### .cca-state
 
