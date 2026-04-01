@@ -24,16 +24,9 @@ esac
 
 # ── Check what's missing ────────────────────────────────────────
 
-NEED_NODE=false
 NEED_GIT=false
 NEED_CLAUDE=false
 NEED_AUTH=false
-
-if ! command -v node &>/dev/null; then
-  NEED_NODE=true
-elif [ "$(node -e 'console.log(+(process.versions.node.split(".")[0]) >= 18)' 2>/dev/null)" != "true" ]; then
-  NEED_NODE=true
-fi
 
 if ! command -v git &>/dev/null; then
   NEED_GIT=true
@@ -50,7 +43,7 @@ fi
 
 # ── Nothing missing? Skip to plugin install ──────────────────────
 
-if [ "$NEED_NODE" = false ] && [ "$NEED_GIT" = false ] && [ "$NEED_CLAUDE" = false ] && [ "$NEED_AUTH" = false ]; then
+if [ "$NEED_GIT" = false ] && [ "$NEED_CLAUDE" = false ] && [ "$NEED_AUTH" = false ]; then
   echo "  All prerequisites found."
   echo ""
 else
@@ -59,12 +52,6 @@ else
 
   echo "  Checking your system..."
   echo ""
-
-  if [ "$NEED_NODE" = true ]; then
-    echo "  [ ] Node.js 18+    (needed by Claude Code)"
-  else
-    echo "  [x] Node.js         $(node --version 2>/dev/null)"
-  fi
 
   if [ "$NEED_GIT" = true ]; then
     echo "  [ ] git             (needed for plugins)"
@@ -90,31 +77,22 @@ else
 
   case "$OS" in
     mac)
-      if command -v brew &>/dev/null; then
-        CAN_AUTO=true
-        PKG_MGR="Homebrew"
-      fi
+      # macOS: xcode-select provides git, native installer provides claude
+      CAN_AUTO=true
       ;;
     linux)
       if command -v apt-get &>/dev/null; then
         CAN_AUTO=true
-        PKG_MGR="apt"
       fi
       ;;
   esac
 
-  if [ "$CAN_AUTO" = true ] && { [ "$NEED_NODE" = true ] || [ "$NEED_GIT" = true ] || [ "$NEED_CLAUDE" = true ]; }; then
-    echo "  I can install the missing pieces using $PKG_MGR."
-    echo ""
-
-    # Build description of what we'll do
+  if [ "$CAN_AUTO" = true ] && { [ "$NEED_GIT" = true ] || [ "$NEED_CLAUDE" = true ]; }; then
     STEPS=()
     [ "$NEED_GIT" = true ] && STEPS+=("git")
-    [ "$NEED_NODE" = true ] && STEPS+=("Node.js 22")
-    [ "$NEED_CLAUDE" = true ] && STEPS+=("Claude Code (via npm)")
+    [ "$NEED_CLAUDE" = true ] && STEPS+=("Claude Code")
 
     echo "  Will install: ${STEPS[*]}"
-    [ "$OS" = "linux" ] && echo "  Note: This will use sudo for apt — you may be prompted for your password."
     echo ""
 
     printf "  Install now? [Y/n] "
@@ -128,7 +106,6 @@ else
       if [ "$OS" = "mac" ]; then
         if [ "$NEED_GIT" = true ]; then
           echo "  Installing git..."
-          # Prefer xcode CLI tools (gets git + other dev tools)
           if ! xcode-select -p &>/dev/null; then
             echo "  Running xcode-select --install (a dialog will pop up)..."
             xcode-select --install 2>/dev/null || true
@@ -140,14 +117,9 @@ else
           fi
         fi
 
-        if [ "$NEED_NODE" = true ]; then
-          echo "  Installing Node.js..."
-          brew install node 2>/dev/null
-        fi
-
         if [ "$NEED_CLAUDE" = true ]; then
           echo "  Installing Claude Code..."
-          npm install -g @anthropic-ai/claude-code 2>/dev/null
+          curl -fsSL https://claude.ai/install.sh | bash 2>/dev/null
         fi
       fi
 
@@ -160,19 +132,9 @@ else
           sudo apt-get install -y -qq git >/dev/null 2>&1
         fi
 
-        if [ "$NEED_NODE" = true ]; then
-          echo "  Installing Node.js 22..."
-          sudo apt-get install -y -qq ca-certificates curl gnupg >/dev/null 2>&1
-          sudo mkdir -p /etc/apt/keyrings
-          curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg 2>/dev/null
-          echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list >/dev/null
-          sudo apt-get update -qq >/dev/null 2>&1
-          sudo apt-get install -y -qq nodejs >/dev/null 2>&1
-        fi
-
         if [ "$NEED_CLAUDE" = true ]; then
           echo "  Installing Claude Code..."
-          sudo npm install -g @anthropic-ai/claude-code >/dev/null 2>&1
+          curl -fsSL https://claude.ai/install.sh | bash 2>/dev/null
         fi
       fi
 
@@ -186,10 +148,8 @@ else
     fi
   fi
 
-  # If we still have missing deps (user declined, or auto-install not available), show manual steps
-  # Re-check after potential install
+  # If we still have missing deps, show manual steps
   STILL_MISSING=false
-  command -v node &>/dev/null || STILL_MISSING=true
   command -v git &>/dev/null || STILL_MISSING=true
   command -v claude &>/dev/null || STILL_MISSING=true
 
@@ -197,32 +157,24 @@ else
     echo "  Please install the missing items, then re-run this installer:"
     echo ""
 
-    if ! command -v node &>/dev/null; then
-      echo "  1) Node.js 18+:"
-      case "$OS" in
-        mac)     echo "     brew install node  — or download from https://nodejs.org" ;;
-        linux)   echo "     curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -"
-                 echo "     sudo apt-get install -y nodejs" ;;
-        windows) echo "     Download from https://nodejs.org" ;;
-        *)       echo "     Download from https://nodejs.org" ;;
-      esac
-      echo ""
-    fi
-
     if ! command -v git &>/dev/null; then
-      echo "  2) git:"
+      echo "  1) git:"
       case "$OS" in
         mac)     echo "     xcode-select --install" ;;
         linux)   echo "     sudo apt install git" ;;
-        windows) echo "     Download from https://git-scm.com" ;;
+        windows) echo "     Download from https://git-scm.com/downloads/win" ;;
         *)       echo "     https://git-scm.com/downloads" ;;
       esac
       echo ""
     fi
 
     if ! command -v claude &>/dev/null; then
-      echo "  3) Claude Code:"
-      echo "     npm install -g @anthropic-ai/claude-code"
+      echo "  2) Claude Code:"
+      case "$OS" in
+        mac|linux) echo "     curl -fsSL https://claude.ai/install.sh | bash" ;;
+        windows)   echo "     In PowerShell: irm https://claude.ai/install.ps1 | iex" ;;
+        *)         echo "     Visit https://claude.ai/code for instructions" ;;
+      esac
       echo ""
     fi
 
