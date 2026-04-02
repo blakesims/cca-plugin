@@ -253,9 +253,14 @@ if [ "$INSTALL_OK" = true ]; then
   echo ""
   echo "  Plugins installed (user scope — persists across all sessions)."
   echo ""
-  echo "  Done! Launching Claude..."
+  echo "  Next steps:"
+  echo "    1. Create a project folder:  mkdir ~/projects/my-app && cd ~/projects/my-app"
+  echo "    2. Start Claude Code:        claude"
+  echo "    3. Type inside Claude:       /cca-plugin:setup"
   echo ""
-  exec claude "Hi! I just installed Claude Code Architects. Let's set up my project." < "$TTY_IN"
+  echo "  Or follow your personalized build guide for detailed instructions."
+  echo ""
+  exit 0
 fi
 
 # ── Install failed — show error and manual steps ─────────────────
